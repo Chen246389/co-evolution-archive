@@ -1,15 +1,55 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>电商自动化建设路线图</title><style>
-:root{--bg:#090b0b;--panel:#0f1212;--ink:#f1f3f2;--muted:#7c888c;--line:#242a29;--mint:#55e4c2}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Microsoft YaHei",sans-serif}.shell{width:min(980px,calc(100% - 30px));margin:auto}.top{height:66px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}.top a{color:var(--mint);text-decoration:none;font:10px monospace}.top span{color:#65716e;font:9px monospace}.hero{padding:55px 0 35px}.hero small{color:var(--mint);font:9px monospace}.hero h1{font-size:clamp(30px,5vw,48px);margin:14px 0 10px}.hero p{color:var(--muted);font-size:12px}.stats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);margin-bottom:40px}.stat{padding:18px;background:var(--panel);border-right:1px solid var(--line)}.stat:last-child{border:0}.stat span{display:block;color:#687471;font-size:9px}.stat b{display:block;font:300 24px monospace;margin:7px 0}.stat small{color:#596461;font-size:9px}.flow{position:relative;padding-bottom:60px}.flow:before{content:"";position:absolute;top:20px;bottom:80px;left:19px;width:1px;background:#29302e}.phase{display:grid;grid-template-columns:40px 1fr;gap:18px;position:relative;padding-bottom:30px}.num{width:40px;height:40px;border:2px solid #313a37;background:var(--bg);border-radius:50%;display:grid;place-items:center;z-index:1;color:#68736f;font:10px monospace}.phase.active .num{border-color:var(--mint);color:var(--mint)}.phase.done .num{background:var(--mint);border-color:var(--mint);color:#07100e}.body{padding-top:2px}.heading{display:flex;justify-content:space-between;gap:12px;margin-bottom:14px}.heading small{color:#5f6b67;font:8px monospace}.heading h2{font-size:18px;margin:5px 0 0}.state{height:max-content;border:1px solid #2d3835;border-radius:13px;padding:5px 8px;color:#6d7975;font:8px monospace}.phase.active .state{color:var(--mint);border-color:#31594f}.phase.done .state{color:#07100e;background:var(--mint);border-color:var(--mint)}label{display:flex;align-items:flex-start;gap:9px;margin:11px 0;color:#a0aaa6;font-size:12px}input{margin-top:2px;accent-color:var(--mint)}footer{border-top:1px solid var(--line);padding:28px 0 45px;color:#515c59;font:8px monospace}@media(max-width:600px){.stats{grid-template-columns:1fr}.stat{border-right:0;border-bottom:1px solid var(--line)}.heading{display:block}.state{display:inline-block;margin-top:8px}}
-</style></head><body><header class="top shell"><a href="index.html">← 返回档案馆</a><span>PROGRESS SAVED ON THIS DEVICE</span></header><main class="shell"><section class="hero"><small>BUILD ROADMAP · STRATEGY TO EXECUTION</small><h1>电商自动化建设路线图</h1><p>每完成一个任务即可勾选，系统会自动计算阶段状态与总体进度。</p></section><section class="stats"><div class="stat"><span>总体进度</span><b id="total">0%</b><small id="count">0 / 18 项完成</small></div><div class="stat"><span>当前阶段</span><b id="current">01</b><small id="currentName">基础治理</small></div><div class="stat"><span>最终交付</span><b>商品包</b><small>人工审核后上架</small></div></section><section class="flow" id="flow"></section></main><footer class="shell">CODEX × E-COMMERCE · CONTINUOUS DELIVERY</footer><script>
-const phases=[
-['01','FOUNDATION','基础治理与目录标准',['确定自动化系统的公开与私密边界','建立统一产品文件夹和命名规则','确定人工审核与平台执行门槛']],
-['02','DATA','经营数据中心',['接收淘宝、抖店和推广数据导出表','统一销售额、退款、消耗和 ROI 字段','生成异常监控及日报基础数据']],
-['03','PRODUCT','选品与测试池',['建立候选产品标准字段','记录推广测试数据与潜力判断','输出淘汰、继续测试或准备上新的结论']],
-['04','PRODUCTION','商品上新生产线',['整理商品、SKU、价格和卖点资料','生成主图、详情图和视频生产任务','输出待上新商品包和检查清单']],
-['05','GROWTH','推广监控与经营复盘',['生成推广计划和监控指标','输出保留、调整和暂停建议','保留人工确认，不自动修改平台']],
-['06','REPORTING','日报、周报与月报系统',['自动生成日报与异常清单','自动生成周度趋势和行动计划','自动生成月度经营复盘']]
-];
-flow.innerHTML=phases.map(p=>`<article class="phase" data-phase="${p[0]}"><div class="num">${p[0]}</div><div class="body"><div class="heading"><div><small>${p[1]}</small><h2>${p[2]}</h2></div><span class="state">未开始</span></div>${p[3].map(t=>`<label><input type="checkbox">${t}</label>`).join('')}</div></article>`).join('');
-const checks=[...document.querySelectorAll('input')], nodes=[...document.querySelectorAll('.phase')], key='commerce-roadmap-v1';try{const saved=JSON.parse(localStorage.getItem(key)||'[]');checks.forEach((c,i)=>c.checked=!!saved[i])}catch(e){}
-function update(){const done=checks.filter(c=>c.checked).length;total.textContent=Math.round(done/checks.length*100)+'%';count.textContent=`${done} / ${checks.length} 项完成`;let active=nodes[nodes.length-1];nodes.forEach(n=>{const cs=[...n.querySelectorAll('input')],d=cs.filter(c=>c.checked).length;n.classList.toggle('done',d===cs.length);n.classList.toggle('active',d>0&&d<cs.length);n.querySelector('.state').textContent=d===cs.length?'已完成':d>0?'进行中':'未开始';if(cs.some(c=>!c.checked)&&active===nodes[nodes.length-1])active=n});current.textContent=active.dataset.phase;currentName.textContent=active.querySelector('h2').textContent;try{localStorage.setItem(key,JSON.stringify(checks.map(c=>c.checked)))}catch(e){}}checks.forEach(c=>c.onchange=update);update();
-</script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>电商自动化建设路线图</title>
+  <style>
+    :root{--bg:#090b0b;--panel:#0f1212;--ink:#f1f3f2;--muted:#7c888c;--line:#242a29;--mint:#55e4c2}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Microsoft YaHei",sans-serif}.shell{width:min(980px,calc(100% - 30px));margin:auto}.top{min-height:66px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px}.top a{color:var(--mint);text-decoration:none;font:10px monospace}.top span{color:#65716e;font:9px monospace;text-align:right}.hero{padding:55px 0 35px}.hero small{color:var(--mint);font:9px monospace}.hero h1{font-size:clamp(30px,5vw,48px);margin:14px 0 10px}.hero p{color:var(--muted);font-size:12px;line-height:1.8}.privacy{border:1px solid #21443b;background:#0d1715;padding:16px 18px;margin:0 0 28px;color:#91a49e;font-size:11px;line-height:1.8}.privacy b{color:var(--mint)}.stats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);margin-bottom:40px}.stat{padding:18px;background:var(--panel);border-right:1px solid var(--line)}.stat:last-child{border:0}.stat span{display:block;color:#687471;font-size:9px}.stat b{display:block;font:300 24px monospace;margin:7px 0}.stat small{color:#596461;font-size:9px}.flow{position:relative;padding-bottom:60px}.flow:before{content:"";position:absolute;top:20px;bottom:80px;left:19px;width:1px;background:#29302e}.phase{display:grid;grid-template-columns:40px 1fr;gap:18px;position:relative;padding-bottom:30px}.num{width:40px;height:40px;border:2px solid #313a37;background:var(--bg);border-radius:50%;display:grid;place-items:center;z-index:1;color:#68736f;font:10px monospace}.phase.active .num{border-color:var(--mint);color:var(--mint)}.phase.done .num{background:var(--mint);border-color:var(--mint);color:#07100e}.body{padding-top:2px}.heading{display:flex;justify-content:space-between;gap:12px;margin-bottom:14px}.heading small{color:#5f6b67;font:8px monospace}.heading h2{font-size:18px;margin:5px 0 0}.state{height:max-content;border:1px solid #2d3835;border-radius:13px;padding:5px 8px;color:#6d7975;font:8px monospace}.phase.active .state{color:var(--mint);border-color:#31594f}.phase.done .state{color:#07100e;background:var(--mint);border-color:var(--mint)}.task{border-bottom:1px solid #1b211f;padding:10px 0 12px}.task:last-child{border-bottom:0}.task label{display:flex;align-items:flex-start;gap:9px;color:#a0aaa6;font-size:12px}.task input{margin-top:2px;accent-color:var(--mint)}.result{margin:7px 0 0 25px;color:#596561;font-size:10px;line-height:1.6}.result.ready{color:#93aaa4}.result b{color:var(--mint);font-weight:500}footer{border-top:1px solid var(--line);padding:28px 0 45px;color:#515c59;font:8px monospace}@media(max-width:600px){.stats{grid-template-columns:1fr}.stat{border-right:0;border-bottom:1px solid var(--line)}.heading{display:block}.state{display:inline-block;margin-top:8px}.top span{max-width:190px}}
+  </style>
+</head>
+<body>
+  <header class="top shell"><a href="index.html">← 返回档案馆</a><span>仅展示脱敏成果 · 进度保存在当前设备</span></header>
+  <main class="shell">
+    <section class="hero"><small>BUILD ROADMAP · STRATEGY TO EXECUTION</small><h1>电商自动化建设路线图</h1><p>每完成一个任务即可勾选。完成后，对应位置将同步可公开的成果摘要。</p></section>
+    <aside class="privacy"><b>成果展示规则</b>　只展示成果名称、完成数量、完成状态与脱敏说明；不展示底层代码、原始经营数据、店铺账号、客户订单、私有 Skill 或具体操作参数。</aside>
+    <section class="stats"><div class="stat"><span>总体进度</span><b id="total">0%</b><small id="count">0 / 18 项完成</small></div><div class="stat"><span>当前阶段</span><b id="current">01</b><small id="currentName">基础治理与目录标准</small></div><div class="stat"><span>最终交付</span><b>商品包</b><small>人工审核后上架</small></div></section>
+    <section class="flow" id="flow"></section>
+  </main>
+  <footer class="shell">CODEX × E-COMMERCE · PRIVACY-SAFE DELIVERY</footer>
+  <script>
+    const phases = [
+      {id:'01',code:'FOUNDATION',name:'基础治理与目录标准',tasks:[
+        {name:'确定自动化系统的公开与私密边界',result:'待确认成果展示边界'},
+        {name:'建立统一产品文件夹和命名规则',result:'待产出目录规范'},
+        {name:'确定人工审核与平台执行门槛',result:'待产出审核门槛清单'}]},
+      {id:'02',code:'DATA',name:'经营数据中心',tasks:[
+        {name:'接收淘宝、抖店和推广数据导出表',result:'待产出数据接收模板'},
+        {name:'统一销售额、退款、消耗和 ROI 字段',result:'待产出脱敏字段标准'},
+        {name:'生成异常监控及日报基础数据',result:'待产出监控摘要'}]},
+      {id:'03',code:'PRODUCT',name:'选品与测试池',tasks:[
+        {name:'建立候选产品标准字段',result:'待产出选品模板'},
+        {name:'记录推广测试数据与潜力判断',result:'待产出测试记录结构'},
+        {name:'输出淘汰、继续测试或准备上新的结论',result:'待产出决策摘要'}]},
+      {id:'04',code:'PRODUCTION',name:'商品上新生产线',tasks:[
+        {name:'整理商品、SKU、价格和卖点资料',result:'待产出商品资料包'},
+        {name:'生成主图、详情图和视频生产任务',result:'待产出视觉任务包'},
+        {name:'输出待上新商品包和检查清单',result:'待产出上新交付包'}]},
+      {id:'05',code:'GROWTH',name:'推广监控与经营复盘',tasks:[
+        {name:'生成推广计划和监控指标',result:'待产出推广计划摘要'},
+        {name:'输出保留、调整和暂停建议',result:'待产出脱敏决策统计'},
+        {name:'保留人工确认，不自动修改平台',result:'待产出人工确认记录'}]},
+      {id:'06',code:'REPORTING',name:'日报、周报与月报系统',tasks:[
+        {name:'自动生成日报与异常清单',result:'待产出日报样例'},
+        {name:'自动生成周度趋势和行动计划',result:'待产出周报样例'},
+        {name:'自动生成月度经营复盘',result:'待产出月报样例'}]}
+    ];
+    flow.innerHTML = phases.map(p => `<article class="phase" data-phase="${p.id}"><div class="num">${p.id}</div><div class="body"><div class="heading"><div><small>${p.code}</small><h2>${p.name}</h2></div><span class="state">未开始</span></div>${p.tasks.map(t => `<div class="task"><label><input type="checkbox"><span>${t.name}</span></label><p class="result"><b>成果</b> · ${t.result}</p></div>`).join('')}</div></article>`).join('');
+    const checks=[...document.querySelectorAll('input')], nodes=[...document.querySelectorAll('.phase')], key='commerce-roadmap-v1';
+    try{const saved=JSON.parse(localStorage.getItem(key)||'[]');checks.forEach((c,i)=>c.checked=!!saved[i])}catch(e){}
+    function update(){const done=checks.filter(c=>c.checked).length;total.textContent=Math.round(done/checks.length*100)+'%';count.textContent=`${done} / ${checks.length} 项完成`;let active=nodes[nodes.length-1];nodes.forEach(n=>{const cs=[...n.querySelectorAll('input')],d=cs.filter(c=>c.checked).length;n.classList.toggle('done',d===cs.length);n.classList.toggle('active',d>0&&d<cs.length);n.querySelector('.state').textContent=d===cs.length?'已完成':d>0?'进行中':'未开始';cs.forEach(c=>c.closest('.task').querySelector('.result').classList.toggle('ready',c.checked));if(cs.some(c=>!c.checked)&&active===nodes[nodes.length-1])active=n});current.textContent=active.dataset.phase;currentName.textContent=active.querySelector('h2').textContent;try{localStorage.setItem(key,JSON.stringify(checks.map(c=>c.checked)))}catch(e){}}
+    checks.forEach(c=>c.onchange=update);update();
+  </script>
+</body>
+</html>
