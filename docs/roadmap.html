@@ -22,8 +22,8 @@
     const phases = [
       {id:'01',code:'FOUNDATION',name:'基础治理与目录标准',tasks:[
         {name:'确定自动化系统的公开与私密边界',done:true,result:'已建立 1 套公开/私密边界规则'},
-        {name:'建立统一产品文件夹和命名规则',result:'待产出目录规范'},
-        {name:'确定人工审核与平台执行门槛',result:'待产出审核门槛清单'}]},
+        {name:'建立统一产品文件夹和命名规则',done:true,result:'已建立 1 套生产目录、1 套命名规范与 1 个单产品模板'},
+        {name:'确定人工审核与平台执行门槛',done:true,result:'已建立 1 套运营审核与最终执行门槛'}]},
       {id:'02',code:'DATA',name:'经营数据中心',tasks:[
         {name:'接收淘宝、抖店和推广数据导出表',result:'待产出数据接收模板'},
         {name:'统一销售额、退款、消耗和 ROI 字段',result:'待产出脱敏字段标准'},
@@ -46,7 +46,7 @@
         {name:'自动生成月度经营复盘',result:'待产出月报样例'}]}
     ];
     flow.innerHTML = phases.map(p => `<article class="phase" data-phase="${p.id}"><div class="num">${p.id}</div><div class="body"><div class="heading"><div><small>${p.code}</small><h2>${p.name}</h2></div><span class="state">未开始</span></div>${p.tasks.map(t => `<div class="task"><label><input type="checkbox" ${t.done?'checked':''}><span>${t.name}</span></label><p class="result"><b>成果</b> · ${t.result}</p></div>`).join('')}</div></article>`).join('');
-    const checks=[...document.querySelectorAll('input')], nodes=[...document.querySelectorAll('.phase')], key='commerce-roadmap-v2';
+    const checks=[...document.querySelectorAll('input')], nodes=[...document.querySelectorAll('.phase')], key='commerce-roadmap-v3';
     try{const saved=JSON.parse(localStorage.getItem(key)||'null');if(Array.isArray(saved))checks.forEach((c,i)=>c.checked=!!saved[i])}catch(e){}
     function update(){const done=checks.filter(c=>c.checked).length;total.textContent=Math.round(done/checks.length*100)+'%';count.textContent=`${done} / ${checks.length} 项完成`;let active=nodes[nodes.length-1];nodes.forEach(n=>{const cs=[...n.querySelectorAll('input')],d=cs.filter(c=>c.checked).length;n.classList.toggle('done',d===cs.length);n.classList.toggle('active',d>0&&d<cs.length);n.querySelector('.state').textContent=d===cs.length?'已完成':d>0?'进行中':'未开始';cs.forEach(c=>c.closest('.task').querySelector('.result').classList.toggle('ready',c.checked));if(cs.some(c=>!c.checked)&&active===nodes[nodes.length-1])active=n});current.textContent=active.dataset.phase;currentName.textContent=active.querySelector('h2').textContent;try{localStorage.setItem(key,JSON.stringify(checks.map(c=>c.checked)))}catch(e){}}
     checks.forEach(c=>c.onchange=update);update();
