@@ -2,107 +2,98 @@
 
 import { useMemo, useState } from "react";
 
-type View = "archives" | "memory" | "evolution";
+type View = "projects" | "tasks" | "progress" | "skills";
 
-const records = [
+const projects = [
   {
-    date: "2026.08.08",
-    issue: "NO. 003",
-    title: "把零散想法变成可观看的数字档案",
-    summary: "完成档案结构、视觉语言与公开展示链路，让每一次成长都有迹可循。",
-    tags: ["体系构建", "公开展示"],
-    accent: "mint",
-    items: [
-      ["能力", "叙事型网页", "将时间、事件与成果组织为清晰的浏览体验。"],
-      ["记忆", "内容原则", "只记录产生实际变化的节点，保持档案有密度。"],
-      ["进化", "从记录到表达", "记录不再只是备忘，而成为可分享的个人资产。"],
-    ],
+    date: "2026.08",
+    issue: "PROJECT 03",
+    title: "求职展示型成长档案馆",
+    summary: "把长期协作、工程判断与交付结果组织成招聘方可以快速理解的公开作品。",
+    tags: ["产品设计", "公开部署", "隐私治理"],
+    outcome: "完成从需求分析、信息架构到公开上线的闭环。",
+    tasks: ["拆解参考产品的核心逻辑", "建立项目 / 任务 / 进程三层结构", "完成响应式页面与公开发布"],
+    progress: "从“展示结果”升级为“同时展示判断过程与成长证据”。",
+    skills: ["信息架构", "前端实现", "产品叙事"],
   },
   {
-    date: "2026.07.26",
-    issue: "NO. 002",
-    title: "建立稳定的协作与复盘节奏",
-    summary: "把目标、行动、证据和下一步串成闭环，减少重复沟通与无效尝试。",
-    tags: ["协作方法", "流程升级"],
-    accent: "violet",
-    items: [
-      ["记忆", "协作约定", "先对齐结果，再拆分任务；重要决定必须留下依据。"],
-      ["进化", "责任闭环", "从完成动作升级到对最终结果负责。"],
-    ],
+    date: "2026.07",
+    issue: "PROJECT 02",
+    title: "人机协作工作流标准化",
+    summary: "建立目标、行动、证据、复盘四步闭环，让复杂任务的推进状态清晰可追踪。",
+    tags: ["流程设计", "AI 协作"],
+    outcome: "形成可复用的任务执行框架，降低重复沟通成本。",
+    tasks: ["定义任务完成标准", "设计进度检查点", "记录关键决策及依据"],
+    progress: "从按指令执行，进化为围绕最终结果主动推进。",
+    skills: ["任务拆解", "证据决策", "复盘优化"],
   },
   {
-    date: "2026.07.12",
-    issue: "NO. 001",
-    title: "共同档案馆正式启动",
-    summary: "确定以时间线保存共同经历，以记忆与进化两条支线沉淀长期价值。",
-    tags: ["起点", "档案体系"],
-    accent: "amber",
-    items: [
-      ["能力", "档案建模", "建立事件、标签、能力与记忆的基础内容模型。"],
-      ["进化", "持续积累", "从一次性交付转向长期可增长的内容系统。"],
-    ],
+    date: "2026.06",
+    issue: "PROJECT 01",
+    title: "个人能力档案体系从零搭建",
+    summary: "将零散经历转化为可积累、可检索、可验证的职业能力资产。",
+    tags: ["体系构建", "知识管理"],
+    outcome: "建立项目、能力、记忆与进化节点的统一归档标准。",
+    tasks: ["定义归档字段", "区分事实记录与能力提升", "建立更新规则"],
+    progress: "从零散笔记转向结构化职业档案。",
+    skills: ["系统思维", "内容建模", "长期主义"],
   },
 ];
 
-const memories = records.flatMap((r) => r.items.filter((i) => i[0] === "记忆").map((i) => ({ ...r, item: i })));
-const evolutions = records.flatMap((r) => r.items.filter((i) => i[0] === "进化" || i[0] === "能力").map((i) => ({ ...r, item: i })));
+const views: { id: View; label: string; note: string }[] = [
+  { id: "projects", label: "项目档案", note: "完整成果" },
+  { id: "tasks", label: "任务执行", note: "具体行动" },
+  { id: "progress", label: "成长进程", note: "能力变化" },
+  { id: "skills", label: "能力图谱", note: "职业价值" },
+];
 
 export default function Home() {
-  const [view, setView] = useState<View>("archives");
+  const [view, setView] = useState<View>("projects");
   const [query, setQuery] = useState("");
-  const filtered = useMemo(() => records.filter((r) => `${r.title}${r.summary}${r.tags.join("")}`.toLowerCase().includes(query.toLowerCase())), [query]);
+  const filtered = useMemo(() => projects.filter((p) => JSON.stringify(p).toLowerCase().includes(query.toLowerCase())), [query]);
+  const skillSet = [...new Set(projects.flatMap((p) => p.skills))];
 
-  return (
-    <main>
-      <div className="ambient ambient-one" />
-      <div className="ambient ambient-two" />
-      <header className="topbar">
-        <a className="brand" href="#top" aria-label="返回顶部"><span className="brandmark">C</span><span>CO·ARCHIVE</span></a>
-        <div className="live"><i /> ARCHIVE ONLINE</div>
-      </header>
+  return <main>
+    <div className="ambient ambient-one" /><div className="ambient ambient-two" />
+    <header className="topbar">
+      <a className="brand" href="#top" aria-label="返回顶部"><span className="brandmark">E</span><span>EVOLUTION FILE</span></a>
+      <div className="privacy"><span>PUBLIC PORTFOLIO</span><b>隐私信息已隐藏</b></div>
+    </header>
 
-      <section className="hero" id="top">
-        <p className="eyebrow">A LIVING RECORD OF GROWTH</p>
-        <h1>共同进化<br /><em>档案馆</em></h1>
-        <p className="lead">记录人与伙伴之间真实发生的改变。<br />每一条档案，都是下一次出发的坐标。</p>
-        <a className="scroll-link" href="#archive"><span>探索档案</span><b>↓</b></a>
-      </section>
+    <section className="hero" id="top">
+      <p className="eyebrow">HUMAN × AI · CAREER ARCHIVE</p>
+      <h1>进化<br /><em>档案馆</em></h1>
+      <p className="lead">一份持续生长的职业能力证明。<br />记录我如何思考、执行、交付，并在真实任务中不断进化。</p>
+      <div className="hero-note"><span>01</span><p>不展示身份隐私<br /><b>只展示能力与成果</b></p></div>
+      <a className="scroll-link" href="#archive"><span>查看档案</span><b>↓</b></a>
+    </section>
 
-      <section className="stats" aria-label="档案数据">
-        <div><strong>03</strong><span>成长档案</span></div>
-        <div><strong>07</strong><span>能力与记忆</span></div>
-        <div><strong>27</strong><span>共同进化日</span></div>
-        <p>持续更新中<br /><small>LAST UPDATE · 08 AUG 2026</small></p>
-      </section>
+    <section className="stats" aria-label="档案概览">
+      <div><strong>03</strong><span>核心项目</span></div>
+      <div><strong>09</strong><span>关键任务</span></div>
+      <div><strong>09</strong><span>能力标签</span></div>
+      <p>STATUS · OPEN TO WORK<br /><small>持续更新的职业作品档案</small></p>
+    </section>
 
-      <section className="archive" id="archive">
-        <div className="section-head">
-          <div><p className="eyebrow">THE COLLECTION</p><h2>浏览档案</h2></div>
-          <label className="search"><span>⌕</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="搜索档案" aria-label="搜索档案" /></label>
-        </div>
+    <section className="meaning">
+      <p className="eyebrow">WHY THIS ARCHIVE EXISTS</p>
+      <div><h2>简历告诉你我做过什么，<br /><em>档案馆展示我是如何做到的。</em></h2><p>这里不是日记，也不是信息堆积。每个项目必须包含具体任务、可见成果和能力变化，让招聘方在几分钟内看见执行力、思考方式与成长速度。</p></div>
+    </section>
 
-        <nav className="tabs" aria-label="档案视图">
-          {(["archives", "memory", "evolution"] as View[]).map((v) => <button key={v} className={view === v ? "active" : ""} onClick={() => setView(v)}>{v === "archives" ? "全部档案" : v === "memory" ? "长期记忆" : "能力进化"}</button>)}
-        </nav>
+    <section className="archive" id="archive">
+      <div className="section-head"><div><p className="eyebrow">PROOF OF WORK</p><h2>能力证据库</h2></div><label className="search"><span>⌕</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="搜索项目或能力" aria-label="搜索项目或能力" /></label></div>
+      <nav className="tabs" aria-label="档案视图">{views.map((v) => <button key={v.id} className={view === v.id ? "active" : ""} onClick={() => setView(v.id)}><span>{v.label}</span><small>{v.note}</small></button>)}</nav>
 
-        {view === "archives" ? (
-          <div className="timeline">
-            {filtered.map((record) => <article className={`record ${record.accent}`} key={record.issue}>
-              <div className="record-meta"><span>{record.date}</span><small>{record.issue}</small></div>
-              <div className="record-body">
-                <div className="tags">{record.tags.map((t) => <span key={t}>{t}</span>)}</div>
-                <h3>{record.title}</h3><p>{record.summary}</p>
-                <div className="details">{record.items.map((item) => <div key={item[1]}><b>{item[0]}</b><section><h4>{item[1]}</h4><p>{item[2]}</p></section></div>)}</div>
-              </div>
-            </article>)}
-            {!filtered.length && <p className="empty">没有找到相关档案。</p>}
-          </div>
-        ) : (
-          <div className="card-grid">{(view === "memory" ? memories : evolutions).map(({ date, item }, index) => <article className="insight" key={`${item[1]}${index}`}><span>{String(index + 1).padStart(2, "0")}</span><small>{date}</small><p>{item[0]}</p><h3>{item[1]}</h3><div>{item[2]}</div></article>)}</div>
-        )}
-      </section>
+      {view === "projects" && <div className="timeline">{filtered.map((p) => <article className="record" key={p.issue}><div className="record-meta"><span>{p.date}</span><small>{p.issue}</small></div><div className="record-body"><div className="tags">{p.tags.map(t => <span key={t}>{t}</span>)}</div><h3>{p.title}</h3><p>{p.summary}</p><div className="outcome"><b>RESULT</b><span>{p.outcome}</span></div><div className="details">{p.tasks.map((task, i) => <div key={task}><b>0{i + 1}</b><section><h4>{task}</h4><p>{i === p.tasks.length - 1 ? "交付与复盘" : "关键执行节点"}</p></section></div>)}</div></div></article>)}</div>}
 
-      <footer><div className="brand"><span className="brandmark">C</span><span>CO·ARCHIVE</span></div><p>成长不是一条直线，<br />但值得被认真保存。</p><small>© 2026 · BUILT FOR THE JOURNEY</small></footer>
-    </main>
-  );
+      {view === "tasks" && <div className="task-board">{filtered.map((p, i) => <article key={p.issue}><header><span>0{i + 1}</span><div><small>{p.issue}</small><h3>{p.title}</h3></div><b>DONE</b></header>{p.tasks.map((task, n) => <div className="task-row" key={task}><span>0{n + 1}</span><p>{task}</p><small>已完成</small></div>)}</article>)}</div>}
+
+      {view === "progress" && <div className="progress-list">{filtered.map((p, i) => <article key={p.issue}><div className="progress-index">{String(i + 1).padStart(2, "0")}</div><div><small>{p.date} · EVOLUTION NODE</small><h3>{p.title}</h3><p>{p.progress}</p></div><span>↗</span></article>)}</div>}
+
+      {view === "skills" && <div className="skills-grid">{skillSet.map((skill, i) => <article key={skill}><span>{String(i + 1).padStart(2, "0")}</span><p>{i < 3 ? "PRODUCT" : i < 6 ? "EXECUTION" : "THINKING"}</p><h3>{skill}</h3><div className="skill-level"><i style={{width:`${72 + (i % 3) * 9}%`}} /></div><small>由真实项目与任务记录验证</small></article>)}</div>}
+    </section>
+
+    <section className="contact"><p className="eyebrow">A NOTE TO RECRUITERS</p><h2>如果你在寻找一个能把模糊目标<br />变成清晰成果的人，<em>欢迎继续了解。</em></h2><p>为保护个人隐私，联系方式将在正式沟通时提供。</p></section>
+    <footer><div className="brand"><span className="brandmark">E</span><span>EVOLUTION FILE</span></div><p>用结果证明能力，<br />用进化证明潜力。</p><small>© 2026 · PUBLIC CAREER ARCHIVE</small></footer>
+  </main>;
 }

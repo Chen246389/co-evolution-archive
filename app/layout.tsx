@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "共同进化档案馆",
-  description: "记录人与伙伴之间真实发生的改变。每一条档案，都是下一次出发的坐标。",
+  title: "进化档案馆｜职业能力作品集",
+  description: "一份持续生长的职业能力证明：记录思考、执行、交付与真实进化。",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
