@@ -14,7 +14,7 @@
   <main class="shell">
     <section class="hero"><small>BUILD ROADMAP · STRATEGY TO EXECUTION</small><h1>电商自动化建设路线图</h1><p>每完成一个任务即可勾选。完成后，对应位置将同步可公开的成果摘要。</p></section>
     <aside class="privacy"><b>成果展示规则</b>　只展示成果名称、完成数量、完成状态与脱敏说明；不展示底层代码、原始经营数据、店铺账号、客户订单、私有 Skill 或具体操作参数。</aside>
-    <section class="stats"><div class="stat"><span>总体进度</span><b id="total">0%</b><small id="count">0 / 18 项完成</small></div><div class="stat"><span>当前阶段</span><b id="current">01</b><small id="currentName">基础治理与目录标准</small></div><div class="stat"><span>最终交付</span><b>商品包</b><small>人工审核后上架</small></div></section>
+    <section class="stats"><div class="stat"><span>总体进度</span><b id="total">0%</b><small id="count">0 / 19 项完成</small></div><div class="stat"><span>当前阶段</span><b id="current">01</b><small id="currentName">基础治理与目录标准</small></div><div class="stat"><span>最终交付</span><b>商品包</b><small>人工审核后上架</small></div></section>
     <section class="flow" id="flow"></section>
   </main>
   <footer class="shell">CODEX × E-COMMERCE · PRIVACY-SAFE DELIVERY</footer>
@@ -33,6 +33,7 @@
         {name:'记录推广测试数据与潜力判断',result:'待产出测试记录结构'},
         {name:'输出淘汰、继续测试或准备上新的结论',result:'待产出决策摘要'}]},
       {id:'04',code:'PRODUCTION',name:'商品上新生产线',tasks:[
+        {name:'建立复制上新、AI 图片与审核留痕流程',done:true,result:'已建立 1 条上新生产线与 1 份多节点生产台账'},
         {name:'整理商品、SKU、价格和卖点资料',result:'待产出商品资料包'},
         {name:'生成主图、详情图和视频生产任务',result:'待产出视觉任务包'},
         {name:'输出待上新商品包和检查清单',result:'待产出上新交付包'}]},
@@ -46,7 +47,7 @@
         {name:'自动生成月度经营复盘',result:'待产出月报样例'}]}
     ];
     flow.innerHTML = phases.map(p => `<article class="phase" data-phase="${p.id}"><div class="num">${p.id}</div><div class="body"><div class="heading"><div><small>${p.code}</small><h2>${p.name}</h2></div><span class="state">未开始</span></div>${p.tasks.map(t => `<div class="task"><label><input type="checkbox" ${t.done?'checked':''}><span>${t.name}</span></label><p class="result"><b>成果</b> · ${t.result}</p></div>`).join('')}</div></article>`).join('');
-    const checks=[...document.querySelectorAll('input')], nodes=[...document.querySelectorAll('.phase')], key='commerce-roadmap-v3';
+    const checks=[...document.querySelectorAll('input')], nodes=[...document.querySelectorAll('.phase')], key='commerce-roadmap-v4';
     try{const saved=JSON.parse(localStorage.getItem(key)||'null');if(Array.isArray(saved))checks.forEach((c,i)=>c.checked=!!saved[i])}catch(e){}
     function update(){const done=checks.filter(c=>c.checked).length;total.textContent=Math.round(done/checks.length*100)+'%';count.textContent=`${done} / ${checks.length} 项完成`;let active=nodes[nodes.length-1];nodes.forEach(n=>{const cs=[...n.querySelectorAll('input')],d=cs.filter(c=>c.checked).length;n.classList.toggle('done',d===cs.length);n.classList.toggle('active',d>0&&d<cs.length);n.querySelector('.state').textContent=d===cs.length?'已完成':d>0?'进行中':'未开始';cs.forEach(c=>c.closest('.task').querySelector('.result').classList.toggle('ready',c.checked));if(cs.some(c=>!c.checked)&&active===nodes[nodes.length-1])active=n});current.textContent=active.dataset.phase;currentName.textContent=active.querySelector('h2').textContent;try{localStorage.setItem(key,JSON.stringify(checks.map(c=>c.checked)))}catch(e){}}
     checks.forEach(c=>c.onchange=update);update();
