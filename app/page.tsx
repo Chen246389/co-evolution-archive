@@ -4,6 +4,7 @@ import { ChangeEvent, useMemo, useState } from "react";
 
 type Module = { id:string; group:string; label:string; desc:string; action:string };
 const modules:Module[] = [
+  {id:"upload-center",group:"数据接入",label:"数据接入中心",desc:"按报表类型上传并校验数据",action:"检查数据"},
   {id:"dashboard",group:"经营分析",label:"经营驾驶舱",desc:"核心指标、趋势与经营风险",action:"刷新看板"},
   {id:"product-search",group:"经营分析",label:"单品诊断",desc:"按商品查询完整经营表现",action:"查询商品"},
   {id:"plan",group:"经营分析",label:"计划分析",desc:"推广计划分层与止损提醒",action:"运行分层"},
@@ -36,12 +37,14 @@ export default function Home(){
  const [platform,setPlatform]=useState("全部平台");
  const [tag,setTag]=useState("全部标签");
  const [uploaded,setUploaded]=useState<string[]>([]);
+ const [reportFiles,setReportFiles]=useState<Record<string,string[]>>({});
  const [notice,setNotice]=useState("");
  const [sideOpen,setSideOpen]=useState(false);
  const current=modules.find(m=>m.id===active)!;
  const filtered=useMemo(()=>products.filter(p=>(tag==="全部标签"||p.tag===tag)&&p.name.includes(query)),[tag,query]);
  const run=(label=current.action)=>{setNotice(`${label}已完成 · 当前为脱敏演示结果`); setTimeout(()=>setNotice(""),2600)};
  const upload=(e:ChangeEvent<HTMLInputElement>)=>{const names=Array.from(e.target.files||[]).map(f=>f.name); if(names.length){setUploaded(v=>[...new Set([...v,...names])]); setNotice(`已读取 ${names.length} 个文件，可开始分析`)};};
+ const uploadReport=(report:string,e:ChangeEvent<HTMLInputElement>)=>{const names=Array.from(e.target.files||[]).map(f=>f.name);if(!names.length)return;setReportFiles(v=>({...v,[report]:[...new Set([...(v[report]||[]),...names])]}));setUploaded(v=>[...new Set([...v,...names])]);setNotice(`${report}：已选择 ${names.length} 个文件`)};
  return <div className="app-shell">
    <aside className={sideOpen?"sidebar open":"sidebar"}>
     <div className="logo"><span>策</span><div><b>经营智能台</b><small>本地分析样板</small></div></div>
@@ -57,6 +60,7 @@ export default function Home(){
       <label className="search">⌕<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="搜索商品、计划或类目"/></label>
       <select value={tag} onChange={e=>setTag(e.target.value)} aria-label="标签"><option>全部标签</option><option>S款</option><option>A款</option><option>B款</option><option>新品</option></select>
     </section>
+    {active==="upload-center"&&<DataUpload files={reportFiles} onUpload={uploadReport} onRun={run}/>} 
     {active==="dashboard"&&<Dashboard />}
     {active==="plan"&&<Plan />}
     {active==="compare"&&<Compare />}
@@ -71,6 +75,13 @@ export default function Home(){
    {notice&&<div className="toast">✓ {notice}</div>}
  </div>
 }
+
+const reportGroups=[
+ {title:"推广数据",note:"用于计划、单元、创意、关键词、人群和地域分析",reports:["营销场景","计划报表","单元报表","内容报表","创意报表","关键词报表","人群报表","地域报表","商品报表"]},
+ {title:"商品数据",note:"用于销售、退款、流量、类目和新老客分析",reports:["生意参谋数据","商品效果数据","单品流量来源","新老客报表"]},
+ {title:"市场数据",note:"用于选品、价格带、季节性和类目机会判断",reports:["类目洞察","市场排行","竞品商品","抖音内容排行"]},
+];
+function DataUpload({files,onUpload,onRun}:{files:Record<string,string[]>;onUpload:(r:string,e:ChangeEvent<HTMLInputElement>)=>void;onRun:(s?:string)=>void}){const total=Object.values(files).reduce((n,v)=>n+v.length,0);return <div className="content data-upload"><div className="upload-intro"><div><span>STEP 01 · DATA INPUT</span><h2>按报表类型上传经营数据</h2><p>同一种报表可以多选上传。当前阶段先检查文件和字段，确认口径后再生成分析图表。</p></div><div><strong>{total}</strong><span>已选择文件</span><button className="primary" onClick={()=>onRun("数据完整性检查")}>检查数据完整性</button></div></div>{reportGroups.map((group,gi)=><section className="report-group" key={group.title}><header><i className={`group-mark g${gi}`}/><div><h2>{group.title}<small>{group.reports.length} 种报表</small></h2><p>{group.note}</p></div></header><div className="report-grid">{group.reports.map((report,ri)=>{const count=(files[report]||[]).length;return <article className={count?"report-card ready":"report-card"} key={report}><div className="report-name"><span>{String(ri+1).padStart(2,"0")}</span><div><b>{report}</b><small>CSV / Excel · 可多选</small></div>{count>0&&<em>已选择 {count}</em>}</div><label className="report-picker">{count?"继续添加文件":"选择文件（可多选）"}<input type="file" accept=".csv,.xlsx,.xls" multiple onChange={e=>onUpload(report,e)}/></label>{count>0&&<div className="file-list">{files[report].slice(0,3).map(name=><span key={name}>✓ {name}</span>)}{count>3&&<small>另有 {count-3} 个文件</small>}</div>}<footer><span>{count?"等待字段检查":"尚未上传"}</span><button disabled={!count} onClick={()=>onRun(`${report}字段检查`)}>检查字段 →</button></footer></article>})}</div></section>)}<section className="next-step"><b>接下来的处理顺序</b><div><span className={total?"done":""}>1　上传报表</span><span>2　检查字段</span><span>3　确认统计口径</span><span>4　运行分析</span><span>5　生成图表</span></div><p>文件目前只用于当前步骤；在正式建立私有数据仓库前，不会写入公开档案馆。</p></section></div>}
 
 function Dashboard(){return <div className="content"><div className="kpis">{[["总销售额","¥35.69万","+12.8%"],["净销售额","¥32.69万","+9.6%"],["推广花费","¥3.08万","-2.1%"],["整体 ROI","10.62","+0.8"],["退款率","8.41%","-1.2%"]].map(x=><article key={x[0]}><span>{x[0]}</span><strong>{x[1]}</strong><small className={x[2].startsWith("-")?"down":"up"}>{x[2]} 较上期</small></article>)}</div><div className="grid two"><Panel title="销售额与推广花费趋势"><div className="chart"><i style={{height:"38%"}}/><i style={{height:"52%"}}/><i style={{height:"47%"}}/><i style={{height:"70%"}}/><i style={{height:"61%"}}/><i style={{height:"82%"}}/><i style={{height:"73%"}}/><svg viewBox="0 0 600 180" preserveAspectRatio="none"><polyline points="0,130 100,115 200,121 300,72 400,90 500,42 600,58"/></svg></div></Panel><Panel title="经营行动清单"><div className="action-list"><p><b className="red">2</b><span>紧急止损<small>高花费、零成交或退款异常</small></span></p><p><b className="amber">6</b><span>待优化<small>高投入、效率低于目标</small></span></p><p><b className="green">4</b><span>建议放量<small>稳定增长且利润空间充足</small></span></p><p><b className="blue">9</b><span>持续观察<small>样本量尚未达到决策标准</small></span></p></div></Panel></div><div className="grid three"><Panel title="类目销售贡献"><Donut/></Panel><Panel title="新老客结构"><div className="split"><b style={{width:"64%"}}>新客 64%</b><b>老客 36%</b></div><p className="muted">新客贡献 ¥21.7万 · 老客贡献 ¥12.1万</p></Panel><Panel title="今日数据质量"><div className="quality"><strong>82</strong><span>/100</span><p>7 类报表完整 · 2 类待上传</p></div></Panel></div></div>}
 function Panel({title,children}:{title:string;children:React.ReactNode}){return <article className="panel"><header><h2>{title}</h2><button>查看明细 →</button></header>{children}</article>}
