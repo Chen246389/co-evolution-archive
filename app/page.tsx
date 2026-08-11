@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 
 type Row = Record<string, string | number | null | undefined>;
@@ -8,6 +8,7 @@ type Module = { id: string; group: string; label: string; desc: string; action: 
 type Product = { id: string; name: string; status: string; visitors: number; buyers: number; sales: number; refund: number; spend: number; promoSales: number; roi: number; tag: string };
 type Plan = { id: string; name: string; scene: string; spend: number; sales: number; orders: number; roi: number; tier: string };
 type Daily = { date: string; spend: number; sales: number; orders: number };
+type CloudSnapshot = { products: Product[]; plans: Plan[]; daily: Daily[]; savedAt: number };
 
 const modules: Module[] = [
   { id: "upload-center", group: "数据接入", label: "数据接入中心", desc: "上传、识别并校验经营报表", action: "检查数据" },
@@ -105,15 +106,41 @@ export default function Home() {
   const [active, setActive] = useState("upload-center");
   const [businessRows, setBusinessRows] = useState<Row[]>([]);
   const [promoRows, setPromoRows] = useState<Row[]>([]);
+  const [cloudSnapshot, setCloudSnapshot] = useState<CloudSnapshot | null>(null);
+  const [cloudState, setCloudState] = useState<"loading" | "ready" | "signed-out" | "saving" | "error">("loading");
+  const [cloudEmail, setCloudEmail] = useState("");
   const [files, setFiles] = useState<Record<string, string>>({});
   const [query, setQuery] = useState(""); const [tag, setTag] = useState("全部标签"); const [notice, setNotice] = useState(""); const [loading, setLoading] = useState(false); const [sideOpen, setSideOpen] = useState(false);
   const current = modules.find(x => x.id === active)!;
-  const products = useMemo(() => buildProducts(businessRows, promoRows), [businessRows, promoRows]);
-  const plans = useMemo(() => buildPlans(promoRows), [promoRows]);
-  const daily = useMemo(() => buildDaily(promoRows), [promoRows]);
+  const localProducts = useMemo(() => buildProducts(businessRows, promoRows), [businessRows, promoRows]);
+  const localPlans = useMemo(() => buildPlans(promoRows), [promoRows]);
+  const localDaily = useMemo(() => buildDaily(promoRows), [promoRows]);
+  const products = localProducts.length ? localProducts : cloudSnapshot?.products ?? [];
+  const plans = localPlans.length ? localPlans : cloudSnapshot?.plans ?? [];
+  const daily = localDaily.length ? localDaily : cloudSnapshot?.daily ?? [];
   const filtered = products.filter(x => (tag === "全部标签" || x.tag === tag) && (!query || x.name.includes(query) || x.id.includes(query)));
-  const hasReal = businessRows.length > 0 || promoRows.length > 0;
+  const hasReal = products.length > 0 || plans.length > 0;
   const notify = (text: string) => { setNotice(text); window.setTimeout(() => setNotice(""), 3200); };
+  useEffect(() => {
+    fetch("/api/cloud-data", { cache: "no-store" }).then(async response => {
+      if (response.status === 401) { setCloudState("signed-out"); return; }
+      if (!response.ok) throw new Error("云端数据读取失败");
+      const data = await response.json() as { user?: { email?: string }; snapshot?: CloudSnapshot | null };
+      setCloudEmail(data.user?.email ?? ""); setCloudSnapshot(data.snapshot ?? null); setCloudState("ready");
+    }).catch(() => setCloudState("error"));
+  }, []);
+  const saveOriginal = async (kind: "business" | "promo", file: File, rowCount: number) => {
+    const form = new FormData(); form.append("kind", kind); form.append("rowCount", String(rowCount)); form.append("file", file);
+    const response = await fetch("/api/cloud-data", { method: "POST", body: form });
+    if (response.status === 401) { setCloudState("signed-out"); return false; }
+    if (!response.ok) throw new Error("云端保存失败"); return true;
+  };
+  const saveSnapshot = async (snapshot: CloudSnapshot) => {
+    const form = new FormData(); form.append("kind", "snapshot"); form.append("file", new File([JSON.stringify(snapshot)], "operating-snapshot.json", { type: "application/json" }));
+    const response = await fetch("/api/cloud-data", { method: "POST", body: form });
+    if (response.status === 401) { setCloudState("signed-out"); return false; }
+    if (!response.ok) throw new Error("分析结果保存失败"); setCloudSnapshot(snapshot); setCloudState("ready"); return true;
+  };
   const ingest = async (kind: "business" | "promo", event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]; if (!file) return; setLoading(true);
     try {
@@ -121,8 +148,15 @@ export default function Home() {
       const headers = Object.keys(rows[0] ?? {});
       if (kind === "business" && !headers.includes("商品ID")) throw new Error("这不是生意参谋商品表");
       if (kind === "promo" && !(headers.includes("计划ID") && headers.includes("主体ID"))) throw new Error("这不是推广商品日报");
+      const nextBusiness = kind === "business" ? rows : businessRows, nextPromo = kind === "promo" ? rows : promoRows;
       if (kind === "business") setBusinessRows(rows); else setPromoRows(rows);
       setFiles(v => ({ ...v, [kind]: file.name })); notify(`已识别 ${rows.length.toLocaleString()} 条数据，经营智能台已同步更新`);
+      setCloudState("saving");
+      const stored = await saveOriginal(kind, file, rows.length);
+      if (stored && nextBusiness.length && nextPromo.length) {
+        const snapshot: CloudSnapshot = { products: buildProducts(nextBusiness, nextPromo), plans: buildPlans(nextPromo), daily: buildDaily(nextPromo), savedAt: Date.now() };
+        await saveSnapshot(snapshot); notify("原始报表与分析结果已保存到你的云端空间");
+      } else if (stored) { setCloudState("ready"); notify("报表已保存，继续上传另一张核心报表即可生成分析"); }
     } catch (error) { notify(error instanceof Error ? error.message : "文件读取失败"); } finally { setLoading(false); event.target.value = ""; }
   };
   const groups = [...new Set(modules.map(x => x.group))];
@@ -133,8 +167,8 @@ export default function Home() {
       <div className="privacy-card"><b>隐私保护模式</b><span>当前版本在浏览器内分析，不把原始报表写入公开档案馆</span></div>
     </aside>
     <main className="workspace">
-      <header className="topbar"><button className="menu" onClick={() => setSideOpen(v => !v)}>☰</button><div><small>淘宝经营系统 / {current.group}</small><h1>{current.label}</h1></div><div className="header-actions"><span className={hasReal ? "data-badge live" : "data-badge"}>{hasReal ? "真实数据" : "等待上传"}</span><button className="primary" onClick={() => setActive("upload-center")}>上传数据</button></div></header>
-      <div className="coverage"><b>数据覆盖</b><span className={businessRows.length ? "dot" : "dot off"}/> 生意参谋商品表 <em>{businessRows.length ? `${businessRows.length.toLocaleString()}条` : "待上传"}</em><span className={promoRows.length ? "dot" : "dot off"}/> 推广商品日报 <em>{promoRows.length ? `${promoRows.length.toLocaleString()}条 / ${daily.length}天` : "待上传"}</em>{hasReal && <strong>最近一次更新：刚刚</strong>}</div>
+      <header className="topbar"><button className="menu" onClick={() => setSideOpen(v => !v)}>☰</button><div><small>淘宝经营系统 / {current.group}</small><h1>{current.label}</h1></div><div className="header-actions">{cloudState === "signed-out" ? <a className="sign-in" href="/signin-with-chatgpt?return_to=%2F">登录后云端保存</a> : <span className={cloudState === "ready" ? "data-badge live" : "data-badge"}>{cloudState === "saving" ? "正在保存" : cloudState === "ready" ? "云端已连接" : "本地模式"}</span>}<button className="primary" onClick={() => setActive("upload-center")}>上传数据</button></div></header>
+      <div className="coverage"><b>数据覆盖</b><span className={businessRows.length || cloudSnapshot?.products.length ? "dot" : "dot off"}/> 生意参谋商品表 <em>{products.length ? `${products.length.toLocaleString()}个商品` : "待上传"}</em><span className={promoRows.length || cloudSnapshot?.plans.length ? "dot" : "dot off"}/> 推广商品日报 <em>{plans.length ? `${plans.length}个计划 / ${daily.length}天` : "待上传"}</em>{hasReal && <strong>{cloudSnapshot && !localProducts.length ? "已恢复上次云端结果" : cloudState === "ready" ? `已保存${cloudEmail ? ` · ${cloudEmail}` : ""}` : "当前浏览器分析"}</strong>}</div>
       {active !== "upload-center" && <section className="filters"><div className="range-tabs"><button>近7天</button><button>近15天</button><button className="active">近30天</button><button>自定义</button></div><label className="search">⌕<input value={query} onChange={e => setQuery(e.target.value)} placeholder="搜索商品名称或ID"/></label><select value={tag} onChange={e => setTag(e.target.value)}><option>全部标签</option><option>S款</option><option>A款</option><option>B款</option><option>待优化</option></select></section>}
       {active === "upload-center" && <UploadCenter files={files} loading={loading} onBusiness={e => ingest("business", e)} onPromo={e => ingest("promo", e)} businessCount={businessRows.length} promoCount={promoRows.length}/>} 
       {active === "dashboard" && <Dashboard products={products} plans={plans} daily={daily}/>} 
