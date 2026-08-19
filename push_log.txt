@@ -1,5 +1,0 @@
-git: 'credential-manager-core' is not a git command. See 'git --help'.
-remote: This repository moved. Please use the new location:        
-remote:   https://github.com/Chen246389/co-evolution-archive.git        
-To https://github.com/chen246389/co-evolution-archive.git
-   083300b..c625f9e  main -> main
