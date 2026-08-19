@@ -1,1 +1,5 @@
-fatal: unable to access 'https://github.com/chen246389/co-evolution-archive.git/': Failed to connect to github.com:443 over proxy 127.0.0.1 after 2103 ms: Could not connect to server
+git: 'credential-manager-core' is not a git command. See 'git --help'.
+remote: This repository moved. Please use the new location:        
+remote:   https://github.com/Chen246389/co-evolution-archive.git        
+To https://github.com/chen246389/co-evolution-archive.git
+   97ade5c..083300b  main -> main
