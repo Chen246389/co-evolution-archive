@@ -51,13 +51,14 @@ function render(q=''){const f=archives.filter(a=>(domain==='all'||a.domain===dom
 function renderAll(){render('');strategies.innerHTML=notes('strategy');tactical.innerHTML=notes('tactics');memories.innerHTML=notes('memory');roadmap.innerHTML=stages.map((s,i)=>`<article class="stage reveal" style="transition-delay:${i*60}ms"><span>${s[0]}</span><b>${s[1]}</b><h3>${s[2]}</h3><p>${s[3]}</p></article>`).join('');revealAll()}
 const notes=(kind)=>archives.flatMap(a=>kind==='strategy'?[`<article class="note reveal"><span>${a.code} · ${domainName[a.domain]}</span><h3>${a.strategy[0]}</h3><p>${a.strategy[1]}</p><small>STRATEGIC DIRECTION</small></article>`]:kind==='tactics'?a.tactics.map(t=>`<article class="note reveal"><span>${a.code} · TACTIC</span><h3>${t[0]}</h3><p>${t[1]}</p><small>${a.title}</small></article>`):a.memory.map(m=>`<article class="note reveal"><span>${a.code} · MEMORY</span><h3>${a.title}</h3><p>${m}</p><small>LONG-TERM PRINCIPLE</small></article>`)).join('');
 const stages=[['01','SOFTWARE','软件开发能力','建立 Codex 工程协作底座。'],['02','ENGINEERING','工程环境联动','形成跨仓库、浏览器与部署的执行链。'],['03','COMMERCE','电商业务落地','进入选品、内容、广告与经营复盘。'],['04','ENTERPRISE','企业能力资产化','形成可复用、可审计、可持续治理的体系。']];
+/*IO*/const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.08});
+function revealAll(){document.querySelectorAll('.reveal:not(.in)').forEach(el=>io.observe(el))}
 renderAll();
 search.oninput=e=>render(e.target.value);
 document.querySelectorAll('[data-domain]').forEach(b=>b.onclick=()=>{domain=b.dataset.domain;document.querySelectorAll('[data-domain]').forEach(x=>x.classList.toggle('active',x===b));render(search.value)});
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab))});
 const themeBtn=document.getElementById('themeBtn'),tkey='archive-theme';const savedT=localStorage.getItem(tkey)||'dark';document.body.dataset.theme=savedT;themeBtn.textContent=savedT==='light'?'☾':'◐';themeBtn.onclick=()=>{const next=document.body.dataset.theme==='light'?'dark':'light';document.body.dataset.theme=next;themeBtn.textContent=next==='light'?'☾':'◐';try{localStorage.setItem(tkey,next)}catch(e){}};
-const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.08});
-function revealAll(){document.querySelectorAll('.reveal:not(.in)').forEach(el=>io.observe(el))}
+
 document.addEventListener('mousemove',e=>{const c=e.target.closest('.card,.note');if(c){const r=c.getBoundingClientRect();c.style.setProperty('--mx',(e.clientX-r.left)+'px');c.style.setProperty('--my',(e.clientY-r.top)+'px')}});
 function countUp(el){const t=+el.dataset.target,d=1200,s=performance.now();(function tick(n){const p=Math.min((n-s)/d,1),v=Math.round(t*(1-Math.pow(1-p,3)));el.textContent=v;p<1?requestAnimationFrame(tick):el.textContent=t})(s)}
 document.querySelectorAll('.metric b').forEach(countUp);
