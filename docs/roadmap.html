@@ -29,22 +29,22 @@
         {name:'统一销售额、退款、消耗和 ROI 字段',done:true,result:'已统一口径：销售/退款/访客/买家/件数/加购；推广花费=商品+内容合并口径，与计划报表总额交叉核对一致'},
         {name:'生成异常监控及日报基础数据',done:true,result:'已产出经营看板：7/15/30/自定义周期、环比变化、每日趋势、双轴图表与计划 9 级分级'}]},
       {id:'03',code:'PRODUCT',name:'选品与测试池',tasks:[
-        {name:'建立候选产品标准字段',result:'待产出选品模板'},
-        {name:'记录推广测试数据与潜力判断',result:'待产出测试记录结构'},
-        {name:'输出淘汰、继续测试或准备上新的结论',result:'待产出决策摘要'}]},
+        {name:'建立候选产品标准字段（类目/成本/售价/货源/毛利模型）',result:'待产出选品字段模板'},
+        {name:'记录推广测试数据与潜力判断（花费/销量/转化/结论）',result:'待产出测试记录结构'},
+        {name:'输出淘汰、继续测试或准备上新的结论',result:'待产出决策规则与摘要'}]},
       {id:'04',code:'PRODUCTION',name:'商品上新生产线',tasks:[
         {name:'建立复制上新、AI 图片与审核留痕流程',done:true,result:'已建立 1 条上新生产线与 1 份多节点生产台账'},
-        {name:'整理商品、SKU、价格和卖点资料',result:'待产出商品资料包'},
-        {name:'生成主图、详情图和视频生产任务',result:'待产出视觉任务包'},
-        {name:'输出待上新商品包和检查清单',result:'待产出上新交付包'}]},
+        {name:'整理商品、SKU、价格和卖点资料',result:'待产出商品资料包（名称/SKU/价格/卖点/素材清单）'},
+        {name:'生成主图、详情图和视频生产任务',result:'待产出视觉任务包（主图/详情页/短视频）'},
+        {name:'输出待上新商品包和检查清单',result:'待产出上新交付包（含发布检查清单）'}]},
       {id:'05',code:'GROWTH',name:'推广监控与经营复盘',tasks:[
         {name:'生成推广计划和监控指标',done:true,result:'已完成计划级监控：花费 TOP 商品、访客/加购/转化率与分级标签'},
         {name:'输出保留、调整和暂停建议',done:true,result:'已产出 9 级分级处置建议（观察/止损/预警/优化/标杆等）'},
         {name:'保留人工确认，不自动修改平台',done:true,result:'平台侧零自动操作，所有处置由人工确认执行'}]},
       {id:'06',code:'REPORTING',name:'日报、周报与月报系统',tasks:[
-        {name:'自动生成日报与异常清单',result:'待产出日报样例'},
-        {name:'自动生成周度趋势和行动计划',result:'待产出周报样例'},
-        {name:'自动生成月度经营复盘',result:'待产出月报样例'}]}
+        {name:'自动生成日报与异常清单（每日核心指标+异常项）',result:'待产出日报样例'},
+        {name:'自动生成周度趋势和行动计划（环比+下周计划）',result:'待产出周报样例'},
+        {name:'自动生成月度经营复盘（结构+结论+下一步）',result:'待产出月报样例'}]}
     ];
     flow.innerHTML = phases.map(p => `<article class="phase" data-phase="${p.id}"><div class="num">${p.id}</div><div class="body"><div class="heading"><div><small>${p.code}</small><h2>${p.name}</h2></div><span class="state">未开始</span></div>${p.tasks.map(t => `<div class="task"><label><input type="checkbox" ${t.done?'checked':''}><span>${t.name}</span></label><p class="result"><b>成果</b> · ${t.result}</p></div>`).join('')}</div></article>`).join('');
     const checks=[...document.querySelectorAll('input')], nodes=[...document.querySelectorAll('.phase')], key='commerce-roadmap-v4';
